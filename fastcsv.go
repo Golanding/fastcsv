@@ -3,9 +3,9 @@ package fastcsv
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
-	"syscall"
 )
 
 type FileReader struct {
@@ -22,12 +22,7 @@ func NewFileReader(filename string, separator byte, dest interface{}) (*FileRead
 		return nil, err
 	}
 
-	fi, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := syscall.Mmap(int(f.Fd()), 0, int(fi.Size()), syscall.PROT_READ, syscall.MAP_SHARED)
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -116,10 +111,5 @@ func (r *FileReader) Scan() bool {
 }
 
 func (r *FileReader) Close() error {
-	var err error
-
-	err = syscall.Munmap(r.data)
-	err = r.file.Close()
-
-	return err
+	return r.file.Close()
 }
